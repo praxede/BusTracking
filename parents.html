@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rastreamento do Ônibus Escolar - Prisma</title>
+
+  <!-- Estilo do mapa -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sA+4Z8N8pDg7Z9Yh7xEEAaxPmtJQfy84zexA2P+4P0k="
+    crossorigin=""
+  />
+
+  <style>
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      text-align: center;
+      padding: 0;
+      margin: 0;
+    }
+
+    header {
+      background-color: #1e88e5;
+      color: white;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+    }
+
+    h1 {
+      font-size: 1.4em;
+      margin: 0;
+    }
+
+    #map {
+      height: calc(100vh - 80px);
+      width: 100%;
+    }
+
+    #info {
+      padding: 10px;
+      background-color: white;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2
