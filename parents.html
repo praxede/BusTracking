@@ -120,7 +120,9 @@
     // Atualização em tempo real
     onValue(busRef, (snapshot) => {
       const data = snapshot.val();
-      if (data && data.latitude && data.longitude) {
+      console.log("Dados recebidos do Firebase:", data); // debug
+
+      if (data && data.latitude != null && data.longitude != null) {
         const lat = data.latitude;
         const lng = data.longitude;
         const updated = data.atualizadoEm;
