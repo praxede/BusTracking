@@ -55,30 +55,30 @@
   <button id="sendLocation">Enviar Localização</button>
 
   <script type="module">
-    // Importa o Firebase
+    // Importa Firebase modular
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-    // Configuração do Firebase
+    // Configuração do Firebase (corrigida)
     const firebaseConfig = {
       apiKey: "AIzaSyCmRTx7t2B6V1tyTfAj_kiU7PBpTW1NEWg",
       authDomain: "bustracking-d8b31.firebaseapp.com",
-      databaseURL: "https://bustracking-d8b31-default-rtdb.firebaseio.com/",
+      databaseURL: "https://bustracking-d8b31-default-rtdb.firebaseio.com/", // ✅ barra no final
       projectId: "bustracking-d8b31",
       storageBucket: "bustracking-d8b31.firebasestorage.app",
       messagingSenderId: "74182455484",
       appId: "1:74182455484:web:613d9f632fa81a6ff3e0b9"
     };
 
-    // Inicializa o Firebase
+    // Inicializa Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
     const btn = document.getElementById('sendLocation');
     const statusEl = document.getElementById('status');
 
-    // Função para enviar localização
-    function sendLocationToFirebase(lat, lng) {
+    // Função para enviar localização ao Firebase
+    function sendLocation(lat, lng) {
       const busRef = ref(db, 'onibus/localizacao');
       set(busRef, {
         latitude: lat,
@@ -86,30 +86,40 @@
         atualizadoEm: new Date().toLocaleString()
       })
       .then(() => {
-        statusEl.textContent = `📍 Localização enviada com sucesso: (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+        statusEl.textContent = `📍 Localização enviada: (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
       })
-      .catch(error => {
-        statusEl.textContent = "Erro ao enviar localização: " + error.message;
+      .catch(err => {
+        statusEl.textContent = "Erro ao enviar localização: " + err.message;
+        btn.disabled = false;
       });
     }
 
-    // Quando o motorista clicar
+    // Evento do botão
     btn.addEventListener('click', () => {
-      if (navigator.geolocation) {
-        statusEl.textContent = "Obtendo localização...";
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            sendLocationToFirebase(lat, lng);
-          },
-          (err) => {
-            statusEl.textContent = "Erro ao obter localização: " + err.message;
-          }
-        );
-      } else {
-        statusEl.textContent = "Geolocalização não é suportada neste dispositivo.";
+      if (!navigator.geolocation) {
+        statusEl.textContent = "Seu navegador não suporta geolocalização.";
+        return;
       }
+
+      statusEl.textContent = "Obtendo localização...";
+      btn.disabled = true;
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          sendLocation(lat, lng);
+        },
+        (err) => {
+          statusEl.textContent = "Erro ao obter localização: " + err.message;
+          btn.disabled = false;
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 5000
+        }
+      );
     });
   </script>
 </body>
