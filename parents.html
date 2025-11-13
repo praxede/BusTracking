@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rastreamento do Ônibus Escolar - Prisma</title>
 
-  <!-- Estilo do mapa -->
+  <!-- Leaflet CSS -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -16,11 +16,8 @@
   <style>
     body {
       font-family: "Poppins", Arial, sans-serif;
-      background-color: #f5f7fa;
-      color: #333;
-      text-align: center;
-      padding: 0;
       margin: 0;
+      padding: 0;
     }
 
     header {
@@ -51,11 +48,99 @@
     }
 
     #info {
-      padding: 10px;
-      background-color: white;
       position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
+      background: white;
+      padding: 10px 15px;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      font-size: 0.95em;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="LogoPrisma.png" alt="Logo Prisma" class="logo">
+    <h1>Localização do Ônibus Escolar</h1>
+  </header>
+
+  <div id="map"></div>
+  <div id="info">Aguardando dados do ônibus...</div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o9N1j7kPqHjXn5pGt0QVqKjTx3C1JbqFYgta5Jk0fC4="
+    crossorigin=""
+  ></script>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCmRTx7t2B6V1tyTfAj_kiU7PBpTW1NEWg",
+      authDomain: "bustracking-d8b31.firebaseapp.com",
+      databaseURL: "https://bustracking-d8b31-default-rtdb.firebaseio.com/",
+      projectId: "bustracking-d8b31",
+      storageBucket: "bustracking-d8b31.firebasestorage.app",
+      messagingSenderId: "74182455484",
+      appId: "1:74182455484:web:613d9f632fa81a6ff3e0b9"
+    };
+
+    // Inicializa Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Inicializa o mapa
+    const map = L.map('map').setView([-23.55, -46.63], 13); // centro inicial SP
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Ícone do ônibus
+    const busIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/61/61167.png',
+      iconSize: [40, 40],
+      iconAnchor: [20, 40]
+    });
+
+    let busMarker = null;
+    const infoEl = document.getElementById('info');
+
+    // Firebase reference
+    const busRef = ref(db, 'onibus/localizacao');
+
+    // Atualização em tempo real
+    onValue(busRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data && data.latitude && data.longitude) {
+        const lat = data.latitude;
+        const lng = data.longitude;
+        const updated = data.atualizadoEm;
+
+        if (busMarker) {
+          busMarker.setLatLng([lat, lng]);
+        } else {
+          busMarker = L.marker([lat, lng], { icon: busIcon }).addTo(map);
+          map.setView([lat, lng], 15);
+        }
+
+        infoEl.textContent = `📍 Última atualização: ${updated}`;
+        map.panTo([lat, lng], { animate: true });
+      } else {
+        infoEl.textContent = "Sem dados de localização no momento.";
+      }
+    }, (error) => {
+      console.error("Erro ao ler Firebase:", error);
+      infoEl.textContent = "Erro ao obter dados do ônibus.";
+    });
+  </script>
+</body>
+</html>
