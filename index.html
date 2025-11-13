@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rastreamento do Ônibus - Prisma Escola</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #007bff;
+      text-align: center;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #555;
+      text-align: center;
+      max-width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Rastreamento do Ônibus</h1>
+  <p>Toque no botão abaixo para iniciar o envio da localização.</p>
+  <button id="startBtn">Iniciar Rastreamento</button>
+  <div id="status">Aguardando início...</div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+
+  <script>
+    // 🔧 COLE SEU FIREBASE CONFIG AQUI ↓↓↓
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_DOMINIO.firebaseapp.com",
+      databaseURL: "https://SEU_DATABASE_URL.firebaseio.com",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_BUCKET.appspot.com",
+      messagingSenderId: "SEU_SENDER_ID",
+      appId: "SEU_APP_ID"
+    };
+    // 🔧 ↑↑↑ COLE AQUI ↑↑↑
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const statusEl = document.getElementById('status');
+    const btn = document.getElementById('startBtn');
+
+    let watchId = null;
+
+    btn.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        statusEl.textContent = 'Seu navegador não suporta geolocalização.';
+        return;
+      }
+
+      btn.disabled = true;
+      statusEl.textContent = 'Iniciando rastreamento...';
+
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const timestamp = Date.now();
+
+          // Envia dados ao Firebase
+          db.ref('onibus/viagem1').set({
+            latitude,
+            longitude,
+            timestamp
+          });
+
+          statusEl.textContent = `📍 Enviando posição...
+          Latitude: ${latitude.toFixed(5)} 
+          Longitude: ${longitude.toFixed(5)}`;
+        },
+        (error) => {
+          statusEl.textContent = 'Erro ao obter localização: ' + error.message;
+          btn.disabled = false;
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 5000,
+          timeout: 10000
+        }
+      );
+    });
+  </script>
+</body>
+</html>
